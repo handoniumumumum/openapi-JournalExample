@@ -723,7 +723,7 @@
                     {
                         "name": "username",
                         "in": "path",
-                        "description": "name that need to be deleted",
+                        "description": "name of the user to be updated",
                         "required": true,
                         "schema": {
                             "type": "string"
@@ -731,7 +731,7 @@
                     }
                 ],
                 "requestBody": {
-                    "description": "Update an existent user in the entry",
+                    "description": "Update a user",
                     "content": {
                         "application/json": {
                             "schema": {
@@ -767,7 +767,7 @@
                     {
                         "name": "username",
                         "in": "path",
-                        "description": "The name that needs to be deleted",
+                        "description": "The name of the user that needs to be deleted",
                         "required": true,
                         "schema": {
                             "type": "string"
