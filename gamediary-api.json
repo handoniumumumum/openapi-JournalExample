@@ -795,14 +795,10 @@
                         "format": "int64",
                         "example": 10
                     },
-                    "gameid": {
+                    "gameId": {
                         "type": "integer",
                         "format": "int64",
                         "example": 198772
-                    },
-                    "publishDate": {
-                        "type": "string",
-                        "format": "date-time"
                     },
                     "status": {
                         "type": "string",
@@ -813,13 +809,36 @@
                             "invisible",
                             "draft"
                         ]
+                    },
+                    "publishedDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "entryDate": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2022-03-12T13:48:41+0000"
+                    },
+
+                    "entryText": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+
+                    "playStatus": {
+                        "type": "string",
+                        "description": "play status for the entry",
+                        "enum": [
+                            "playing",
+                            "completed"
+                        ]
                     }
                 },
                 "xml": {
                     "name": "entry"
                 }
             },
-            "Category": {
+            "Platform": {
                 "type": "object",
                 "properties": {
                     "id": {
@@ -829,11 +848,11 @@
                     },
                     "name": {
                         "type": "string",
-                        "example": "Dogs"
+                        "example": "Nintendo 64"
                     }
                 },
                 "xml": {
-                    "name": "category"
+                    "name": "platform"
                 }
             },
             "User": {
@@ -846,7 +865,7 @@
                     },
                     "username": {
                         "type": "string",
-                        "example": "theUser"
+                        "example": "mixmaster"
                     },
                     "firstName": {
                         "type": "string",
@@ -858,19 +877,19 @@
                     },
                     "email": {
                         "type": "string",
-                        "example": "john@email.com"
+                        "example": "mixmaster@email.com"
                     },
                     "password": {
                         "type": "string",
-                        "example": "12345"
+                        "example": "12345@"
                     },
                     "phone": {
                         "type": "string",
-                        "example": "12345"
+                        "example": "123-456-7840"
                     },
                     "userStatus": {
                         "type": "integer",
-                        "description": "User Status",
+                        "description": "A status for a user, e.g. 'online', 'subscriber'",
                         "format": "int32",
                         "example": 1
                     }
@@ -904,17 +923,19 @@
                     "id": {
                         "type": "integer",
                         "format": "int64",
-                        "example": 10
+                        "example": 10,
+                        "description": "If this is not supplied, a unique id will be generated."
                     },
                     "name": {
                         "type": "string",
                         "example": "The Legend of Zelda: Ocarina of Time"
                     },
-                    "category": {
-                        "$ref": "#/components/schemas/Category"
+                    "platform": {
+                        "$ref": "#/components/schemas/Platform"
                     },
                     "photoUrls": {
                         "type": "array",
+                        "description": "links to related photos",
                         "xml": {
                             "wrapped": true
                         },
@@ -933,14 +954,6 @@
                         "items": {
                             "$ref": "#/components/schemas/Tag"
                         }
-                    },
-                    "status": {
-                        "type": "string",
-                        "description": "game status for the entry",
-                        "enum": [
-                            "playing",
-                            "completed"
-                        ]
                     }
                 },
                 "xml": {
