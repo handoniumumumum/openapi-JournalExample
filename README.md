@@ -2,6 +2,8 @@
 
 This is an example OpenAPIv3 for my video game journaling interface.
 
+**[Click here for SwaggerUI](https://handoniumumumum.github.io/openapi-JournalExample)**
+
 ## Usage
 
 > This is an interface, so you need to implement the logic for each endpoint interaction.
