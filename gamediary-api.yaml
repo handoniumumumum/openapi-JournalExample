@@ -1,24 +1,22 @@
 openapi: 3.0.2
 info:
   title: Video Game Diary API
-  description: |-
-    This is a sample interface for a gaming diary based on the OpenAPI 3.0 specification.  You can find out more about
-    Swagger at [http://swagger.io](http://swagger.io).
+  description: This is an API for managing a video game diary based on the OpenAPI 3.0 spec.
   contact:
     email: brandonmerrimanosu@gmail.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: /api/v3
 tags:
   - name: game
-    description: 'a game''s identity and stats '
+    description: Look up or add a game's identity and related journal information
   - name: entry
-    description: A diary entry
+    description: Look up and manage journal entries
   - name: user
-    description: user-focused operations
+    description: Look up and manage users
 paths:
   /game:
     put:
@@ -187,8 +185,8 @@ paths:
     post:
       tags:
         - game
-      summary: Update a game's playing status for the requesting user
-      description: ''
+      summary: Update whether a user is playing the game
+      description: 'Update a game''s playing status for the requesting user '
       operationId: updateGameWithForm
       parameters:
         - name: gameid
@@ -209,19 +207,21 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          description: The game's playing status was updated successfully.
         '405':
-          description: Invalid input
+          description: The status update was invalid
     delete:
       tags:
         - game
       summary: Deletes a game
-      description: Deletes a game and associated diary entries
+      description: Deletes a game with an option to delete associated journal entries
       operationId: deleteGame
       parameters:
         - name: api_key
           in: header
-          description: ''
-          required: false
+          description: The API key associated with the user
+          required: true
           schema:
             type: string
         - name: gameid
@@ -231,15 +231,25 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: deleteJournalEntries
+          in: query
+          description: use true to delete associated blog entries
+          required: true
+          schema:
+            type: boolean
       responses:
-        '400':
-          description: Invalid game value
+        '200':
+          description: The video game was deleted successfully.
+        '404':
+          description: The video game with the given ID does not exist.
+        '500':
+          description: An error occurred while deleting the video game.
   /game/{gameid}/uploadImage:
     post:
       tags:
         - game
-      summary: uploads an image
-      description: ''
+      summary: Uploads an image
+      description: Upload an image for the game to display in related journal entries
       operationId: uploadFile
       parameters:
         - name: gameid
@@ -272,8 +282,8 @@ paths:
     get:
       tags:
         - entry
-      summary: Returns journal entries by status
-      description: Returns a collection of journal entries according to their play status
+      summary: Returns all journal entries
+      description: Returns all visible journal entries
       operationId: getEntries
       responses:
         '200':
@@ -291,14 +301,19 @@ paths:
                   $ref: '#/components/schemas/Entry'
         '400':
           description: Invalid tag value
-      security:
-        - api_key: []
     post:
       tags:
         - entry
       summary: Create a new entry for a game
-      description: Create a journal entry for an existing game
+      description: Create a new journal entry for an existing game
       operationId: createEntry
+      parameters:
+        - name: api_key
+          in: header
+          description: API key of the associated user
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -319,7 +334,63 @@ paths:
                 $ref: '#/components/schemas/Entry'
         '405':
           description: Invalid input
-  /user:
+  /entry/{entryid}:
+    get:
+      tags:
+        - entry
+      summary: Return an entry by its ID
+      description: Returns a single entry with the given ID
+      operationId: getEntryById
+      parameters:
+        - name: entryid
+          in: path
+          description: ID of the entry to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Entry'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Entry'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Game not found
+    delete:
+      tags:
+        - entry
+      summary: Deletes an entry
+      description: Deletes a journal entry with the associated id
+      operationId: deleteEntry
+      parameters:
+        - name: api_key
+          in: header
+          description: The token associated with a logged-in user
+          required: true
+          schema:
+            type: string
+        - name: entryid
+          in: path
+          description: ID of the entry to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: The journal entry was deleted successfully.
+        '404':
+          description: The journal entry with the given ID does not exist.
+        '500':
+          description: An error occurred while deleting the journal entry.
+  /user/:
     post:
       tags:
         - user
@@ -378,8 +449,8 @@ paths:
     get:
       tags:
         - user
-      summary: Logs user into the system
-      description: ''
+      summary: Authenticate a registered user of the application
+      description: Log in a user
       operationId: loginUser
       parameters:
         - name: username
@@ -390,21 +461,21 @@ paths:
             type: string
         - name: password
           in: query
-          description: The password for login in clear text
-          required: false
+          description: The password for login, in plain text for convenience
+          required: true
           schema:
             type: string
       responses:
         '200':
-          description: successful operation
+          description: The operation was successful
           headers:
             X-Rate-Limit:
-              description: calls per hour allowed by the user
+              description: Calls per hour allowed by the user
               schema:
                 type: integer
                 format: int32
             X-Expires-After:
-              description: date in UTC when token expires
+              description: Date in UTC when token expires
               schema:
                 type: string
                 format: date-time
@@ -416,29 +487,29 @@ paths:
               schema:
                 type: string
         '400':
-          description: Invalid username/password supplied
+          description: Invalid username or password supplied
   /user/logout:
     get:
       tags:
         - user
       summary: Logs out current logged in user session
-      description: ''
+      description: Invalidates the user's current session token.
       operationId: logoutUser
       parameters: []
       responses:
         default:
-          description: successful operation
+          description: You have logged out successfully.
   /user/{username}:
     get:
       tags:
         - user
       summary: Get user by user name
-      description: ''
+      description: Look up a user's information using their display name
       operationId: getUserByName
       parameters:
         - name: username
           in: path
-          description: The name that needs to be fetched
+          description: The name of the requested user
           required: true
           schema:
             type: string
@@ -460,12 +531,12 @@ paths:
       tags:
         - user
       summary: Update user
-      description: This can only be done by the logged in user.
+      description: Update the user's name. This can only be done by the logged in user.
       operationId: updateUser
       parameters:
         - name: username
           in: path
-          description: name of the user to be updated
+          description: Name of the user to be updated
           required: true
           schema:
             type: string
@@ -482,15 +553,25 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       responses:
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
         default:
-          description: successful operation
+          description: The operation was successful
     delete:
       tags:
         - user
       summary: Delete user
-      description: This can only be done by the logged in user.
+      description: Deletes the current user. This can only be done by the logged in user.
       operationId: deleteUser
       parameters:
+        - name: api_key
+          in: header
+          description: The key associated with the logged in user
+          required: true
+          schema:
+            type: string
         - name: username
           in: path
           description: The name of the user that needs to be deleted
@@ -502,6 +583,8 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
+        default:
+          description: The operation was successful
 components:
   schemas:
     Entry:
@@ -510,14 +593,16 @@ components:
         id:
           type: integer
           format: int64
+          description: The ID associated with this journal entry
           example: 10
         gameId:
           type: integer
           format: int64
+          description: The ID of the game written about in the entry
           example: 198772
         status:
           type: string
-          description: journal entry status
+          description: Journal entry status
           example: draft
           enum:
             - published
@@ -525,17 +610,19 @@ components:
             - draft
         publishedDate:
           type: string
+          description: Date the entry was most recently set to published
           format: date-time
         entryDate:
           type: string
+          description: Date the entry was written
           format: date-time
           example: 2022-03-12T13:48:41+0000
         entryText:
           type: string
-          format: date-time
+          description: The content of the journal entry
         playStatus:
           type: string
-          description: play status for the entry
+          description: Whether the game was completed at the time this entry was written
           enum:
             - playing
             - completed
@@ -547,10 +634,12 @@ components:
         id:
           type: integer
           format: int64
-          example: 1
+          description: The ID associated with a video game platform
+          example: 2600
         name:
           type: string
-          example: Nintendo 64
+          description: The display name for the video game platform
+          example: Atari 2600
       xml:
         name: platform
     User:
@@ -559,7 +648,7 @@ components:
         id:
           type: integer
           format: int64
-          example: 10
+          example: 1237
         username:
           type: string
           example: mixmaster
@@ -574,13 +663,13 @@ components:
           example: mixmaster@email.com
         password:
           type: string
-          example: 12345@
+          example: ''
         phone:
           type: string
           example: 123-456-7840
         userStatus:
           type: integer
-          description: A status for a user, e.g. 'online', 'subscriber'
+          description: An ID associated with a user status such as 'online'
           format: int32
           example: 1
       xml:
@@ -611,6 +700,13 @@ components:
           example: 'The Legend of Zelda: Ocarina of Time'
         platform:
           $ref: '#/components/schemas/Platform'
+        diaryEntries:
+          type: array
+          description: Entries related to the game
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/Entry'
         photoUrls:
           type: array
           description: links to related photos
@@ -666,8 +762,11 @@ components:
           authorizationUrl: https://gamediary3.swagger.io/oauth/authorize
           scopes:
             write:entries: modify diary entries in your account
-            read:entries: read your diary entries
+            delete:entries: delete diary entries in your account
+            delete:game: delete a game from the database
+            delete:user: delete a user account and all associated journal entries
     api_key:
       type: apiKey
+      description: The API key associated with a registered user
       name: api_key
       in: header
