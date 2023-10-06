@@ -1,13 +1,13 @@
 openapi: 3.0.2
 info:
   title: Video Game Diary API
-  description: This is an API for managing a video game diary based on the OpenAPI 3.0 spec.
+  description: This is an API for managing a video game diary. It is described using the OpenAPI 3.0 spec.
   contact:
     email: brandonmerrimanosu@gmail.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-  version: 1.1.0
+  version: 1.2.0
 servers:
   - url: /api/v3
 tags:
@@ -274,10 +274,26 @@ paths:
       responses:
         '200':
           description: successful operation
+  /game/{gameid}/journal:
+    get:
+      summary: get a specific game's journal
+      tags:
+        - game
+      parameters:
+        - name: gameid
+          in: path
+          description: ID of the game with requested journal entries
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Journal'
   /entry/:
     get:
       tags:
@@ -589,6 +605,7 @@ components:
   schemas:
     Entry:
       type: object
+      description: an entry in a game's journal
       properties:
         id:
           type: integer
@@ -616,7 +633,7 @@ components:
           type: string
           description: Date the entry was written
           format: date-time
-          example: 2022-03-12T13:48:41+0000
+          example: 2023-03-12T13:48:41+0000
         entryText:
           type: string
           description: The content of the journal entry
@@ -626,10 +643,20 @@ components:
           enum:
             - playing
             - completed
-      xml:
-        name: entry
+    Journal:
+      type: object
+      description: A collection of journal entries about a certain game or subject
+      properties:
+        diaryEntries:
+          type: array
+          description: Entries related to a game
+          xml:
+            wrapped: true
+          items:
+            $ref: '#/components/schemas/Entry'
     Platform:
       type: object
+      description: the platform where the video game was released
       properties:
         id:
           type: integer
@@ -640,10 +667,9 @@ components:
           type: string
           description: The display name for the video game platform
           example: Atari 2600
-      xml:
-        name: platform
     User:
       type: object
+      description: A user of the journal application
       properties:
         id:
           type: integer
@@ -672,18 +698,18 @@ components:
           description: An ID associated with a user status such as 'online'
           format: int32
           example: 1
-      xml:
-        name: user
     Tag:
       type: object
+      description: A tag to associate related journal entries by subject
       properties:
         id:
           type: integer
           format: int64
         name:
           type: string
+          example: Top 10 of 2023
       xml:
-        name: tag
+        name: journal-tag
     Game:
       required:
         - name
@@ -722,20 +748,6 @@ components:
             wrapped: true
           items:
             $ref: '#/components/schemas/Tag'
-      xml:
-        name: game
-    ApiResponse:
-      type: object
-      properties:
-        code:
-          type: integer
-          format: int32
-        type:
-          type: string
-        message:
-          type: string
-      xml:
-        name: '##default'
   requestBodies:
     Game:
       description: Game that needs to be added to the database
