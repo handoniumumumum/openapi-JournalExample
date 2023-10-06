@@ -1,6 +1,6 @@
 # openapi-example
 
-**version 1.1.0**
+**version 1.2.0**
 
 This is an OpenAPIv3 description of a video game journaling API.
 
