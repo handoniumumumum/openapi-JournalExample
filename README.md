@@ -1,5 +1,7 @@
 # openapi-example
 
+**version 1.1.0**
+
 This is an OpenAPIv3 description of a video game journaling API.
 
 **[Click here for SwaggerUI](https://handoniumumumum.github.io/openapi-JournalExample)**
